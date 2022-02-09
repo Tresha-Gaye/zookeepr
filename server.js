@@ -51,15 +51,33 @@ function filterByQuery(query, animalsArray) {
   // return the filteres results
   return filteredResults;
 }
+// create route
 
+function findById(id, animalsArray) {
+  const result = animalsArray.filter(animal => animal.id === id)[0];
+  return result;
+}
+
+// app.get('/', (req, res) => {
+// res.send('<h1>Hello World!</h1>')
+// })
 // add the route
-app.get("/api/animals", (req, res) => {
+app.get('/api/animals', (req, res) => {
   // GET method requires 2 args: 1. string descriibing route client wants to fetch from & 2. callback function to execute everytim route is accessed with GET request
   let results = animals;
   if (req.query) {
     results = filterByQuery(req.query, results);
   }
   res.json(results);
+});
+
+app.get('api/animals/:id', (req, res) => {
+  const result = findById(req.params.id, animals);
+  if(result) {
+    res.json(result);
+  } else {
+    res.send(404);
+  }
 });
 
 // chain the listen methods to the server
