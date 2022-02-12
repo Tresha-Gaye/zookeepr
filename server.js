@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 //add code to require the express package
 const express = require("express");
 // create a route that the front end can request data from
@@ -8,6 +10,10 @@ const PORT = process.env.PORT || 3001;
 
 // add code to instantiate the server
 const app = express();
+// parse incoming string or array data
+app.use(express.urlencoded({ extended: true }));
+// parse incoming JSON data
+app.use(express.json());
 
 function filterByQuery(query, animalsArray) {
   let personalityTraitsArray = [];
@@ -40,7 +46,7 @@ function filterByQuery(query, animalsArray) {
   }
   if (query.species) {
     filteredResults = filteredResults.filter(
-      (animal) => animal.specisies === query.species
+      (animal) => animal.species === query.species
     );
   }
   if (query.name) {
@@ -56,6 +62,36 @@ function filterByQuery(query, animalsArray) {
 function findById(id, animalsArray) {
   const result = animalsArray.filter(animal => animal.id === id)[0];
   return result;
+}
+
+function createNewAnimal(body, animalsArray) {
+  const animal = body;
+  // console.log(body);
+  // our function's main code will go here!
+  animalsArray.push(animal);
+  fs.writeFileSync(
+    path.join(__dirname, './data/animals.json'),
+    JSON.stringify({ animals: animalsArray }, null, 2)
+    );
+    console.log(path.join(__dirname, '.data/animals.json'));
+  // return finshed code to post route for response
+  return animal;
+}
+
+function validateAnimal(animal) {
+  if (!animal.name || typeof animal.name !== 'string') {
+    return false;
+  }
+  if (!animal.species || typeof animal.species !== 'string'){
+    return false;
+  }
+  if (!animal.diet || typeof animal.dietc!== 'string') {
+    return false;
+  }
+  if (!animal.personalityTraits || !Array.isArray(animal.personalityTraits)) {
+    return false;
+  }
+  return true;  
 }
 
 // app.get('/', (req, res) => {
@@ -79,6 +115,23 @@ app.get('/api/animals/:id', (req, res) => {
     res.send(404);
   }
 });
+
+app.post('/api/animals', (req, res) => {
+  // req.body is where our incoming content will be 
+  // console.log(req.body);
+
+  // set id based on what the next index of the array will be
+  req.body.id = animals.length.toString();
+
+  // if any data in req.body is incorrect, send 400 error back
+  if (!validateAnimal(req.body)) {
+    res.status(400).send('The animal is not propertly formatted.');
+  } else {
+    // add animal to json file and animals array in this function
+  }
+});
+
+
 
 // chain the listen methods to the server
 app.listen(PORT, () => {
